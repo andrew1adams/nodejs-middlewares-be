@@ -24,34 +24,43 @@ function checksExistsUserAccount(req, res, next) {
 
 function checksCreateTodosUserAvailability(req, res, next) {
   const { user } = req;
-  const userIsFreeMember = user.pro === false && user.todos.length <= 10;
+  const userIsFreeMember = user.pro === false && user.todos.length < 10;
   const userIsProMember = user.pro === true;
 
   if (userIsFreeMember || userIsProMember) return next();
 
-  return res
-    .status(400)
-    .json({ error: "User no has permission to create a new task!" });
+  return res.status(204).send();
 }
 
 function checksTodoExists(req, res, next) {
   const { id } = req.params;
-  const { user } = req;
+  const { username } = req.headers;
 
-  const todoFound = user.todos.find((todo) => todo.id === id);
+  const userFound = users.find((user) => user.username === username);
 
-  if (!todoFound) return res.status(400).json({ error: "Todo not found!" });
+  if (!userFound) return res.status(404).json({ error: "User not found!" });
+
+  const todoFound = userFound.todos.find((todo) => todo.id === id);
+
+  if (!todoFound) return res.status(404).json({ error: "Task not found!" });
+
+  if (id === validate(id))
+    return res.status(400).json({ error: "Is not a valid ID!" });
+
+  req.todo = todoFound;
+  req.user = userFound;
 
   return next();
 }
 
 function findUserById(req, res, next) {
   const { id } = req.params;
-  const { user } = req;
 
-  const userFound = user.todos.find((todo) => todo.id === id);
+  const userFound = users.find((user) => user.id === id);
 
   if (!userFound) return res.status(404).json({ error: "User not found!" });
+
+  req.user = userFound;
 
   return next();
 }

@@ -19,9 +19,22 @@ function checksExistsUserAccount(req, res, next) {
 
   return next();
 }
-
+/**
+ * Esse middleware deve receber o usuário já dentro do request
+ * e chamar a função next apenas se esse usuário ainda estiver
+ * no plano grátis e ainda não possuir 10 todos cadastrados ou
+ * se ele já estiver com o plano Pro ativado.
+ */
 function checksCreateTodosUserAvailability(req, res, next) {
-  // Complete aqui
+  const { user } = req;
+  const userIsFreeMember = user.pro === false && user.todos.length <= 10;
+  const userIsProMember = user.pro === true;
+
+  if (userIsFreeMember || userIsProMember) return next();
+
+  return res
+    .status(400)
+    .json({ error: "User no has permission to create a new task!" });
 }
 
 function checksTodoExists(req, res, next) {

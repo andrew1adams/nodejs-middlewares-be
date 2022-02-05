@@ -17,14 +17,11 @@ function checksExistsUserAccount(req, res, next) {
   if (!userAlreadyExists)
     return res.status(404).json({ error: "User not found!" });
 
+  req.user = userAlreadyExists;
+
   return next();
 }
-/**
- * Esse middleware deve receber o usuário já dentro do request
- * e chamar a função next apenas se esse usuário ainda estiver
- * no plano grátis e ainda não possuir 10 todos cadastrados ou
- * se ele já estiver com o plano Pro ativado.
- */
+
 function checksCreateTodosUserAvailability(req, res, next) {
   const { user } = req;
   const userIsFreeMember = user.pro === false && user.todos.length <= 10;
@@ -38,7 +35,14 @@ function checksCreateTodosUserAvailability(req, res, next) {
 }
 
 function checksTodoExists(req, res, next) {
-  // Complete aqui
+  const { id } = req.params;
+  const { user } = req;
+
+  const todoFound = user.todos.find((todo) => todo.id === id);
+
+  if (!todoFound) return res.status(400).json({ error: "Todo not found!" });
+
+  return next();
 }
 
 function findUserById(req, res, next) {

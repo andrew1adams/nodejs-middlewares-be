@@ -29,7 +29,9 @@ function checksCreateTodosUserAvailability(req, res, next) {
 
   if (userIsFreeMember || userIsProMember) return next();
 
-  return res.status(204).send();
+  return res
+    .status(403)
+    .json({ error: "You already have a ten todos created!" });
 }
 
 function checksTodoExists(req, res, next) {
@@ -40,12 +42,12 @@ function checksTodoExists(req, res, next) {
 
   if (!userFound) return res.status(404).json({ error: "User not found!" });
 
+  if (!validate(id))
+    return res.status(400).json({ error: "Is not a valid ID!" });
+
   const todoFound = userFound.todos.find((todo) => todo.id === id);
 
   if (!todoFound) return res.status(404).json({ error: "Task not found!" });
-
-  if (id === validate(id))
-    return res.status(400).json({ error: "Is not a valid ID!" });
 
   req.todo = todoFound;
   req.user = userFound;
